@@ -8,14 +8,15 @@ namespace Generic_Octree
         private readonly int _Extent;
         private readonly OctreeNode<T> _RootNode;
 
-        public Octree(int size, T initialValue)
+        public Octree(int edgeLength, T initialValue)
         {
-            if ((size <= 0) || ((size & (size - 1)) != 0)) throw new ArgumentException($"Size must be a power of two ({size}).", nameof(size));
+            if ((edgeLength <= 0) || ((edgeLength & (edgeLength - 1)) != 0))
+                throw new ArgumentException($"Size must be a power of two ({edgeLength}).", nameof(edgeLength));
 
-            _Extent = size >> 1;
+            _Extent = edgeLength >> 1;
             _RootNode = new OctreeNode<T>(initialValue);
 
-            EdgeLength = size;
+            EdgeLength = edgeLength;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
