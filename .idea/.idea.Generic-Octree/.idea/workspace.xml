@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AnalysisUIOptions">
-    <option name="SCOPE_TYPE" value="3" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="66bd79fb-1de0-4f8b-8d28-27774cacfa19" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Generic-Octree/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Generic-Octree/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Generic-Octree/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Generic-Octree/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Generic-Octree/Octree.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Generic-Octree/Octree.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Generic-Octree/OctreeNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Generic-Octree/OctreeNode.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +17,8 @@
   <component name="IdeDocumentHistory">
     <changedPaths>
       <option value="$PROJECT_DIR$/Generic-Octree/INodeCollection.cs" />
-      <option value="$PROJECT_DIR$/Generic-Octree/OctreeNode.cs" />
       <option value="$PROJECT_DIR$/Generic-Octree/Octree.cs" />
+      <option value="$PROJECT_DIR$/Generic-Octree/OctreeNode.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1jSyp4oro1hcPcPDTGUGTGQUT90" />
