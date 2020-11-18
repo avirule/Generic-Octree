@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace OctreeNS
 {
-    public class Octree<T> where T : notnull
+    public class Octree<T> : IDisposable where T : notnull
     {
         private readonly uint _Extent;
         private readonly OctreeNode<T> _RootNode;
@@ -13,15 +13,15 @@ namespace OctreeNS
 
         public uint EdgeLength { get; }
 
-        public Octree(uint edgeLength, T initialValue)
+        public Octree(uint edgeLength, T value)
         {
-            if ((edgeLength <= 0) || ((edgeLength & (edgeLength - 1)) != 0))
+            if (edgeLength is 0 || (edgeLength & (edgeLength - 1)) is not 0)
             {
                 throw new ArgumentException($"Size must be a power of two ({edgeLength}).", nameof(edgeLength));
             }
 
             _Extent = edgeLength >> 1;
-            _RootNode = new OctreeNode<T>(initialValue);
+            _RootNode = new OctreeNode<T>(value);
 
             EdgeLength = edgeLength;
         }
@@ -30,17 +30,28 @@ namespace OctreeNS
         {
             OctreeNode<T> currentNode = _RootNode;
 
-            for (uint extent = _Extent; !currentNode!.IsUniform; extent >>= 1)
+            for (uint extent = _Extent; !currentNode.IsUniform; extent >>= 1)
             {
                 Octree.DetermineOctant(extent, ref x, ref y, ref z, out uint octant);
 
-                currentNode = currentNode[(int)octant]!;
+                currentNode = currentNode.Nodes![(int)octant];
             }
 
             return currentNode.Value;
         }
 
         public void SetPoint(uint x, uint y, uint z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            _RootNode.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 
     internal static class Octree

@@ -3,14 +3,11 @@ using System.Buffers;
 
 namespace OctreeNS
 {
-    public class OctreeNode<T> : IDisposable where T : notnull
+    internal class OctreeNode<T> : IDisposable where T : notnull
     {
-        private OctreeNode<T>[]? _Nodes;
-
         public T Value { get; private set; }
-        public bool IsUniform => _Nodes is null;
-
-        public OctreeNode<T>? this[int index] => _Nodes?[index];
+        public OctreeNode<T>[]? Nodes { get; private set; }
+        public bool IsUniform => Nodes is null;
 
         /// <summary>
         ///     Creates an in-memory compressed 3D representation of any unmanaged data type.
@@ -42,7 +39,7 @@ namespace OctreeNS
             Octree.DetermineOctant(extent, ref x, ref y, ref z, out uint octant);
 
             // recursively dig into octree and set
-            _Nodes![octant].SetPoint(extent >> 1, x, y, z, newValue);
+            Nodes![octant].SetPoint(extent >> 1, x, y, z, newValue);
 
             // on each recursion back-step, ensure integrity of node
             // and collapse if all child node values are equal
@@ -54,11 +51,11 @@ namespace OctreeNS
 
         private void Populate()
         {
-            _Nodes = ArrayPool<OctreeNode<T>>.Shared.Rent(8);
+            Nodes = ArrayPool<OctreeNode<T>>.Shared.Rent(8);
 
             for (int index = 0; index < 8; index++)
             {
-                _Nodes[index].Value = Value;
+                Nodes[index].Value = Value;
             }
         }
 
@@ -66,12 +63,12 @@ namespace OctreeNS
         {
             // we elide an `IsUniform`(null) check for perf, but
             // must ensure _Nodes isn't null at the callsite.
-            T value = _Nodes![0].Value;
+            T value = Nodes![0].Value;
 
             // avoiding using linq here for performance sensitivity
             for (int index = 0; index < 8; index++)
             {
-                if (!_Nodes[index].Equals(value))
+                if (!Nodes[index].Equals(value))
                 {
                     return false;
                 }
@@ -84,8 +81,8 @@ namespace OctreeNS
 
         private void Collapse()
         {
-            Value = _Nodes![0].Value;
-            ArrayPool<T>.Shared.Return((_Nodes as T[])!);
+            Value = Nodes![0].Value;
+            ArrayPool<T>.Shared.Return((Nodes as T[])!);
         }
 
 
@@ -95,7 +92,12 @@ namespace OctreeNS
         {
             if (!IsUniform)
             {
-                ArrayPool<T>.Shared.Return((_Nodes as T[])!);
+                for (int index = 0; index < 8; index++)
+                {
+                    Nodes![index].Dispose();
+                }
+
+                ArrayPool<T>.Shared.Return((Nodes as T[])!);
             }
 
             GC.SuppressFinalize(this);
