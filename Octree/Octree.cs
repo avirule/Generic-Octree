@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Generic_Octree
+namespace OctreeNS
 {
-    public class Octree<T> : INodeCollection<T> where T : notnull
+    public class Octree<T> where T : notnull
     {
-        private readonly int _Extent;
+        private readonly uint _Extent;
         private readonly OctreeNode<T> _RootNode;
 
-        public T Value => _RootNode.Value;
+        public T? Value => _RootNode.Value;
         public bool IsUniform => _RootNode.IsUniform;
 
-        public int EdgeLength { get; }
+        public uint EdgeLength { get; }
 
-        public Octree(int edgeLength, T initialValue)
+        public Octree(uint edgeLength, T initialValue)
         {
             if ((edgeLength <= 0) || ((edgeLength & (edgeLength - 1)) != 0))
             {
@@ -26,26 +26,21 @@ namespace Generic_Octree
             EdgeLength = edgeLength;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetPoint(int x, int y, int z) => GetPointIterative(x, y, z);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T GetPointIterative(int x, int y, int z)
+        public T GetPoint(uint x, uint y, uint z)
         {
             OctreeNode<T> currentNode = _RootNode;
 
-            for (int extent = _Extent; !currentNode!.IsUniform; extent >>= 1)
+            for (uint extent = _Extent; !currentNode!.IsUniform; extent >>= 1)
             {
-                Octree.DetermineOctant(extent, ref x, ref y, ref z, out int octant);
+                Octree.DetermineOctant(extent, ref x, ref y, ref z, out uint octant);
 
-                currentNode = currentNode[octant]!;
+                currentNode = currentNode[(int)octant]!;
             }
 
             return currentNode.Value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPoint(int x, int y, int z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
+        public void SetPoint(uint x, uint y, uint z, T value) => _RootNode.SetPoint(_Extent, x, y, z, value);
     }
 
     internal static class Octree
@@ -58,7 +53,7 @@ namespace Generic_Octree
         // 5 7
         // 4 6
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DetermineOctant(int extent, ref int x, ref int y, ref int z, out int octant)
+        public static void DetermineOctant(uint extent, ref uint x, ref uint y, ref uint z, out uint octant)
         {
             octant = 0;
 

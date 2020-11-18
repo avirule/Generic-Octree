@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generic-Octree", "Generic-Octree\Generic-Octree.csproj", "{44B36209-147B-4D5C-ABCA-A316575A916D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Octree", "Octree\Octree.csproj", "{44B36209-147B-4D5C-ABCA-A316575A916D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

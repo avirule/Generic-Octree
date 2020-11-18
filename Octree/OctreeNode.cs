@@ -1,24 +1,24 @@
-using System.Runtime.CompilerServices;
+using System;
+using System.Buffers;
 
-namespace Generic_Octree
+namespace OctreeNS
 {
-    public class OctreeNode<TNode> where TNode : notnull
+    public class OctreeNode<T> : IDisposable where T : notnull
     {
-        private OctreeNode<TNode>[]? _Nodes;
+        private OctreeNode<T>[]? _Nodes;
 
-        public TNode Value { get; private set; }
-        public bool IsUniform => _Nodes == null;
+        public T Value { get; private set; }
+        public bool IsUniform => _Nodes is null;
 
-        public OctreeNode<TNode>? this[int index] => _Nodes?[index];
+        public OctreeNode<T>? this[int index] => _Nodes?[index];
 
         /// <summary>
         ///     Creates an in-memory compressed 3D representation of any unmanaged data type.
         /// </summary>
         /// <param name="value">Initial value of the collection.</param>
-        public OctreeNode(TNode value) => Value = value;
+        public OctreeNode(T value) => Value = value;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetPoint(int extent, int x, int y, int z, TNode newValue)
+        public void SetPoint(uint extent, uint x, uint y, uint z, T newValue)
         {
             if (IsUniform)
             {
@@ -39,7 +39,7 @@ namespace Generic_Octree
                 }
             }
 
-            Octree.DetermineOctant(extent, ref x, ref y, ref z, out int octant);
+            Octree.DetermineOctant(extent, ref x, ref y, ref z, out uint octant);
 
             // recursively dig into octree and set
             _Nodes![octant].SetPoint(extent >> 1, x, y, z, newValue);
@@ -54,33 +54,24 @@ namespace Generic_Octree
 
         private void Populate()
         {
-            _Nodes = new[]
+            _Nodes = ArrayPool<OctreeNode<T>>.Shared.Rent(8);
+
+            for (int index = 0; index < 8; index++)
             {
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value),
-                new OctreeNode<TNode>(Value)
-            };
+                _Nodes[index].Value = Value;
+            }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CheckShouldCollapse()
         {
-            if (IsUniform)
-            {
-                return false;
-            }
-
-            TNode firstValue = _Nodes![0].Value;
+            // we elide an `IsUniform`(null) check for perf, but
+            // must ensure _Nodes isn't null at the callsite.
+            T value = _Nodes![0].Value;
 
             // avoiding using linq here for performance sensitivity
-            foreach (OctreeNode<TNode> octreeNode in _Nodes)
+            for (int index = 0; index < 8; index++)
             {
-                if (!octreeNode.IsUniform || !octreeNode.Value.Equals(firstValue))
+                if (!_Nodes[index].Equals(value))
                 {
                     return false;
                 }
@@ -89,11 +80,27 @@ namespace Generic_Octree
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool Equals(T value) => IsUniform && Value.Equals(value);
+
         private void Collapse()
         {
             Value = _Nodes![0].Value;
-            _Nodes = null;
+            ArrayPool<T>.Shared.Return((_Nodes as T[])!);
         }
+
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            if (!IsUniform)
+            {
+                ArrayPool<T>.Shared.Return((_Nodes as T[])!);
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }
